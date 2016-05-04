@@ -20,7 +20,7 @@ import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
 import org.apache.http.ssl.SSLContexts;
 
 /**
-*
+*SSL配置
 *@author jaciyu
 * @date 2016年5月4日
 */

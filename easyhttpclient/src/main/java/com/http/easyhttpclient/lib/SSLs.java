@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -20,8 +22,8 @@ import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
 import org.apache.http.ssl.SSLContexts;
 
 /**
-*SSL配置
-*@author jaciyu
+* SSL配置
+* @author jaciyu
 * @date 2016年5月4日
 */
 public class SSLs {
@@ -43,18 +45,16 @@ public class SSLs {
     private static class SSLHandler implements  X509TrustManager, HostnameVerifier{
 		
 		@Override
-		public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+		public X509Certificate[] getAcceptedIssuers() {
 			return null;
 		}
 		
 		@Override
-		public void checkServerTrusted(java.security.cert.X509Certificate[] chain,
-				String authType) throws java.security.cert.CertificateException {
+		public void checkServerTrusted(X509Certificate[] chain,String authType) throws CertificateException {
 		}
 		
 		@Override
-		public void checkClientTrusted(java.security.cert.X509Certificate[] chain,
-				String authType) throws java.security.cert.CertificateException {
+		public void checkClientTrusted(X509Certificate[] chain,String authType) throws CertificateException {
 		}
 
 		@Override
@@ -106,7 +106,13 @@ public class SSLs {
 		}
     	return sslIOSessionStrategy;
     }
-    
+    /**
+     * 
+     * @param keyStorePath  自签名证书路径
+     * @param keyStorepass  自签名证书密码
+     * @return
+     * @author jaciyu
+     */
     public SSLs customSSL(String keyStorePath, String keyStorepass){
     	FileInputStream instream =null;
     	KeyStore trustStore = null; 
@@ -121,20 +127,36 @@ public class SSLs {
 		}finally{
 			try {
 				instream.close();
-			} catch (IOException e) {}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		return this;
     }
-    
+    /**
+     * 默认TLSv1.2
+     * @return
+     * @author jaciyu
+     */
     public SSLContext getSSLContext(){
+    	return getSSLContext("TLSv1.2");
+    }
+    /**
+     * 
+     * @param protocol 目前在用的SSL协议主要有5个版本分别是SSLv2、SSLv3、TLSv1.0、TLSv1.1、TLSv1.2,由于SSL漏洞原因有些网站可能不支持SSLv2、SSLv3，建议使用TLSv1.2需要JDK1.7以上版本
+     * @return
+     * @author jaciyu
+     */
+    public SSLContext getSSLContext(String protocol){
     	try {
-    		if(sc==null){
-    			sc = SSLContext.getInstance("TLSv1.2");
+    		if(protocol==null||protocol.trim().length()==0){
+    			protocol = "TLSv1.2";
     		}
+    		sc = SSLContext.getInstance(protocol);
 			return sc;
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
-    	return null;
-    }
+    	return sc;
+    }      
 }
